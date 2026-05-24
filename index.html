@@ -1,4 +1,257 @@
-Hello!Welcome!
-This my space
-no !!
-This is Github
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的导航页</title>
+    <meta name="description" content="个人常用网站导航与书签">
+    <!-- Favicon -->
+    <link rel="icon" href="https://github.githubassets.com/favicons/favicon.svg" type="image/svg+xml">
+    <style>
+        /* 默认浅色主题变量 */
+        :root {
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #6b7c93;
+            --accent-color: #3b82f6;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --radius: 12px;
+        }
+
+        /* 自动跟随系统暗色模式 */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #0d1117;        /* 经典的 GitHub 深色背景 */
+                --card-bg: #161b22;         /* 卡片背景色 */
+                --text-primary: #c9d1d9;    /* 主要文字颜色 */
+                --text-secondary: #8b949e;  /* 次要文字颜色 */
+                --accent-color: #58a6ff;    /* 强调色（亮蓝色） */
+                --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+            }
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        /* Header */
+        header { text-align: center; margin-bottom: 50px; }
+        header h1 { font-size: 2.2rem; margin-bottom: 10px; letter-spacing: -0.5px; }
+        header p { color: var(--text-secondary); font-size: 1.1rem; }
+
+        /* Search Bar */
+        .search-box {
+            max-width: 500px;
+            margin: 30px auto 50px;
+            position: relative;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 14px 24px;
+            border: 2px solid transparent;
+            border-radius: 50px;
+            font-size: 1rem;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            box-shadow: var(--shadow);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .search-box input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Category */
+        .category { margin-bottom: 40px; }
+        .category-title {
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+            padding-left: 12px;
+            border-left: 4px solid var(--accent-color);
+            display: flex;
+            align-items: center;
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        /* Card */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: var(--shadow);
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+        }
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .card-info h3 { font-size: 0.95rem; margin-bottom: 2px; }
+        .card-info p { 
+            font-size: 0.78rem; 
+            color: var(--text-secondary); 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            max-width: 140px;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        footer a { color: var(--accent-color); text-decoration: none; }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .container { padding: 30px 16px; }
+            header h1 { font-size: 1.6rem; }
+            .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+            .card { padding: 16px; gap: 10px; }
+            .card-icon { width: 34px; height: 34px; font-size: 1.1rem; }
+            .card-info p { max-width: 100px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 My Nav</h1>
+            <p>高效工作，从好的导航开始</p>
+        </header>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="搜索站点..." oninput="filterSites()">
+        </div>
+
+        <div id="navContent"></div>
+
+        <footer>
+            <p>© 2026 My Navigation · Powered by <a href="https://pages.github.com" target="_blank">GitHub Pages</a></p>
+        </footer>
+    </div>
+
+<script>
+// ============================================
+// ⬇️ 在这里配置你的导航数据 ⬇️
+// ============================================
+const NAV_DATA = [
+    {
+        category: "🔧 开发工具",
+        sites: [
+            { name: "GitHub", url: "https://github.com", desc: "代码托管平台", icon: "🐙", color: "#24292e" },
+            { name: "Stack Overflow", url: "https://stackoverflow.com", desc: "开发者问答社区", icon: "📚", color: "#f48024" },
+            { name: "MDN Web Docs", url: "https://developer.mozilla.org", desc: "Web 技术文档", icon: "📘", color: "#0060df" },
+            { name: "Vercel", url: "https://vercel.com", desc: "前端部署平台", icon: "▲", color: "#000000" },
+        ]
+    },
+    {
+        category: "🎨 设计资源",
+        sites: [
+            { name: "Figma", url: "https://figma.com", desc: "在线协作设计工具", icon: "🎨", color: "#a259ff" },
+            { name: "Dribbble", url: "https://dribbble.com", desc: "设计师作品展示", icon: "🏀", color: "#ea4c89" },
+            { name: "Unsplash", url: "https://unsplash.com", desc: "免费高清图片库", icon: "📷", color: "#000000" },
+        ]
+    },
+    {
+        category: "🤖 AI 工具",
+        sites: [
+            { name: "ChatGPT", url: "https://chat.openai.com", desc: "OpenAI 对话模型", icon: "💬", color: "#10a37f" },
+            { name: "Hugging Face", url: "https://huggingface.co", desc: "AI 模型社区", icon: "🤗", color: "#ff9d00" },
+        ]
+    },
+    {
+        category: "📰 资讯阅读",
+        sites: [
+            { name: "Hacker News", url: "https://news.ycombinator.com", desc: "科技新闻聚合", icon: "📰", color: "#ff6600" },
+            { name: "掘金", url: "https://juejin.cn", desc: "中文技术社区", icon: "💎", color: "#1e80ff" },
+        ]
+    }
+];
+// ============================================
+// ⬆️ 配置结束 ⬆️
+// ============================================
+
+function renderNav(data) {
+    const container = document.getElementById('navContent');
+    if (data.every(cat => cat.sites.length === 0)) {
+        container.innerHTML = '<p style="text-align:center;color:#999;padding:40px;">没有找到匹配的站点 😢</p>';
+        return;
+    }
+    container.innerHTML = data.map(cat => {
+        if (cat.sites.length === 0) return '';
+        const cards = cat.sites.map(site => `
+            <a class="card" href="${site.url}" target="_blank" rel="noopener noreferrer">
+                <div class="card-icon" style="background:${site.color}15;color:${site.color}">${site.icon}</div>
+                <div class="card-info">
+                    <h3>${site.name}</h3>
+                    <p>${site.desc}</p>
+                </div>
+            </a>
+        `).join('');
+        return `
+            <div class="category">
+                <div class="category-title">${cat.category}</div>
+                <div class="grid">${cards}</div>
+            </div>`;
+    }).join('');
+}
+
+function filterSites() {
+    const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
+    if (!keyword) { renderNav(NAV_DATA); return; }
+    const filtered = NAV_DATA.map(cat => ({
+        ...cat,
+        sites: cat.sites.filter(s => 
+            s.name.toLowerCase().includes(keyword) || 
+            s.desc.toLowerCase().includes(keyword)
+        )
+    }));
+    renderNav(filtered);
+}
+
+// 初始渲染
+renderNav(NAV_DATA);
+</script>
+</body>
+</html>
+
+
