@@ -29,6 +29,11 @@
                 --accent-color: #58a6ff;
                 --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
             }
+            /* 专门修复下拉菜单选项框在暗色模式下的白底白字问题 */
+            .search-engine-select option {
+                background-color: #161b22; /* 选项框深色背景 */
+                color: #c9d1d9;            /* 选项框浅色文字 */
+            }
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -308,3 +313,5 @@ renderNav(NAV_DATA);
 </script>
 </body>
 </html>
+
+
