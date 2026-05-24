@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space</title>
+    <title>我的导航页</title>
     <meta name="description" content="个人常用网站导航与书签">
     <!-- Favicon -->
     <link rel="icon" href="https://github.githubassets.com/favicons/favicon.svg" type="image/svg+xml">
@@ -31,10 +31,10 @@
                 --accent-color: #58a6ff;
                 --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
             }
-            /* 专门修复下拉菜单选项框在暗色模式下的白底白字问题 */
+            /* 修复暗色模式下下拉菜单选项框白底白字的问题 */
             .search-engine-select option {
-                background-color: #161b22; /* 选项框深色背景 */
-                color: #c9d1d9;            /* 选项框浅色文字 */
+                background-color: #161b22;
+                color: #c9d1d9;
             }
         }
 
@@ -83,20 +83,9 @@
             outline: none;
             cursor: pointer;
             border-radius: 50px;
-            appearance: none; /* 隐藏默认下拉箭头 */
+            appearance: none;
             -webkit-appearance: none;
             z-index: 2;
-        }
-        /* 自定义下拉箭头 */
-        .search-engine-select::after {
-            content: "▼";
-            font-size: 0.6rem;
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-secondary);
-            pointer-events: none;
         }
         .search-engine-select:hover {
             background: rgba(128, 128, 128, 0.1);
@@ -104,7 +93,7 @@
         /* 搜索输入框 */
         .search-box input {
             width: 100%;
-            padding: 14px 24px 14px 110px; /* 左侧留出下拉框的空间 */
+            padding: 14px 24px 14px 110px;
             border: 2px solid transparent;
             border-radius: 50px;
             font-size: 1rem;
@@ -161,7 +150,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.3rem;
+            font-size: 1.5rem; /* 调大图标尺寸，让矢量图标更饱满 */
             flex-shrink: 0;
         }
         .card-info h3 { font-size: 0.95rem; margin-bottom: 2px; }
@@ -189,7 +178,7 @@
             header h1 { font-size: 1.6rem; }
             .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
             .card { padding: 16px; gap: 10px; }
-            .card-icon { width: 34px; height: 34px; font-size: 1.1rem; }
+            .card-icon { width: 34px; height: 34px; font-size: 1.2rem; }
             .card-info p { max-width: 100px; }
             .search-box input { padding-left: 100px; }
         }
@@ -199,17 +188,15 @@
     <div class="container">
         <header>
             <h1>🚀 My Nav</h1>
-            <p>快乐时光，从好的导航开始</p>
+            <p>高效工作，从好的导航开始</p>
         </header>
 
         <div class="search-box">
-            <!-- 搜索引擎下拉选择 -->
             <select id="searchEngine" class="search-engine-select">
                 <option value="baidu">百度</option>
                 <option value="google">Google</option>
                 <option value="bing">Bing</option>
             </select>
-            <!-- 搜索输入框 -->
             <input type="text" id="searchInput" placeholder="输入关键词搜索..." oninput="filterSites()" onkeydown="handleSearch(event)">
         </div>
 
@@ -222,11 +209,11 @@
 
 <script>
 // ============================================
-// ⬇️ 在这里配置你的导航数据 ⬇️
+// ⬇️ 导航数据与搜索引擎配置 ⬇️
 // ============================================
 const NAV_DATA = [
     {
-        category: "➊ 常用娱乐",
+        category: "🇨🇳 国内常用",
         sites: [
             { name: "哔哩哔哩", url: "https://www.bilibili.com", desc: "国内知名的视频弹幕网站", icon: "fa-brands fa-bilibili", color: "#fb7299" },
             { name: "微博", url: "https://weibo.com", desc: "随时随地发现新鲜事", icon: "fa-brands fa-weibo", color: "#e6162d" },
@@ -250,7 +237,6 @@ const NAV_DATA = [
     }
 ];
 
-// 搜索引擎配置
 const SEARCH_ENGINES = {
     baidu: "https://www.baidu.com/s?wd=",
     google: "https://www.google.com/search?q=",
@@ -272,10 +258,9 @@ function handleSearch(event) {
     }
 }
 
-// 过滤站点（原有的页面内搜索功能）
+// 过滤站点
 function filterSites() {
     const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
-    // 如果按下了回车，就不再执行页面内过滤，而是触发上面的 handleSearch
     if (event && event.key === 'Enter') return;
 
     if (!keyword) { renderNav(NAV_DATA); return; }
@@ -299,7 +284,9 @@ function renderNav(data) {
         if (cat.sites.length === 0) return '';
         const cards = cat.sites.map(site => `
             <a class="card" href="${site.url}" target="_blank" rel="noopener noreferrer">
-                <div class="card-icon" style="background:${site.color}15;color:${site.color}">${site.icon}</div>
+                <div class="card-icon" style="background:${site.color}15;color:${site.color}">
+                    <i class="${site.icon}"></i>
+                </div>
                 <div class="card-info">
                     <h3>${site.name}</h3>
                     <p>${site.desc}</p>
@@ -319,5 +306,3 @@ renderNav(NAV_DATA);
 </script>
 </body>
 </html>
-
-
