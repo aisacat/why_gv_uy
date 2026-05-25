@@ -253,12 +253,12 @@ function handleSearch(event) {
         const keyword = document.getElementById('searchInput').value.trim();
         if (keyword) {
             const engine = document.getElementById('searchEngine').value;
+            localStorage.setItem('lastSearchEngine', engine); // 搜索时也顺手保存一次
             const searchUrl = SEARCH_ENGINES[engine] + encodeURIComponent(keyword);
             window.open(searchUrl, '_blank');
         }
     }
 }
-
 // 过滤站点
 function filterSites() {
     const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
@@ -303,6 +303,16 @@ function renderNav(data) {
 }
 
 // 初始渲染
+// 页面加载时，从本地存储中读取上次选择的搜索引擎并恢复
+const savedEngine = localStorage.getItem('lastSearchEngine');
+if (savedEngine) {
+    document.getElementById('searchEngine').value = savedEngine;
+}
+// 监听下拉框的变动，一旦切换就保存到本地存储
+document.getElementById('searchEngine').addEventListener('change', function() {
+    localStorage.setItem('lastSearchEngine', this.value);
+});
+    
 renderNav(NAV_DATA);
 </script>
 </body>
