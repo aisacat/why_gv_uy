@@ -233,6 +233,8 @@
             max-width: 500px;
             width: 90%;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-height: 90vh;
+            overflow-y: auto;
         }
         .modal-header {
             font-size: 1.3rem;
@@ -262,6 +264,59 @@
         .form-group input:focus, .form-group select:focus {
             border-color: var(--accent-color);
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .form-group input:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .icon-preview {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 8px;
+            padding: 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 6px;
+        }
+        .icon-preview-img {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .icon-preview-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .icon-preview-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .fetch-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
+        .fetch-btn:hover {
+            opacity: 0.9;
+        }
+        .fetch-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .fetch-btn.loading::after {
+            content: ' ⏳';
         }
         .form-actions {
             display: flex;
@@ -357,19 +412,31 @@
                 </div>
                 <div class="form-group">
                     <label for="siteUrl">网站链接 *</label>
-                    <input type="url" id="siteUrl" placeholder="例如：https://www.bilibili.com" required>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="url" id="siteUrl" placeholder="例如：https://www.bilibili.com" required style="flex: 1;">
+                        <button type="button" class="fetch-btn" id="fetchIconBtn" onclick="fetchFaviconAndColor()">
+                            <i class="fas fa-download"></i> 获取图标
+                        </button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="siteDesc">网站描述 *</label>
                     <input type="text" id="siteDesc" placeholder="例如：国内知名的视频弹幕网站" required>
                 </div>
                 <div class="form-group">
-                    <label for="siteIcon">图标 (选填)</label>
-                    <input type="text" id="siteIcon" placeholder="例如：fa-brands fa-bilibili (FontAwesome 图标类名或图片 URL)">
+                    <label>图标 (自动获取，可手动编辑)</label>
+                    <input type="text" id="siteIcon" placeholder="自动获取或手动输入 FontAwesome 类名">
+                    <div id="iconPreview" class="icon-preview" style="display: none;">
+                        <div class="icon-preview-img" id="previewIcon"></div>
+                        <div class="icon-preview-text" id="previewText"></div>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label for="siteColor">颜色 (选填)</label>
-                    <input type="text" id="siteColor" placeholder="例如：#fb7299" value="#3b82f6">
+                    <label for="siteColor">颜色 (自动获取，可手动编辑)</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="text" id="siteColor" placeholder="例如：#fb7299" value="#3b82f6" style="flex: 1;">
+                        <div style="width: 40px; height: 40px; border-radius: 6px; border: 2px solid var(--text-secondary);" id="colorPreview"></div>
+                    </div>
                 </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">添加</button>
@@ -433,6 +500,147 @@ let currentCategoryIndex = 0;
 // ⬆️ 配置结束 ⬆️
 // ============================================
 
+// 获取网站的 favicon 和主题色
+async function fetchFaviconAndColor() {
+    const url = document.getElementById('siteUrl').value.trim();
+    if (!url) {
+        alert('请先输入网站链接');
+        return;
+    }
+
+    const btn = document.getElementById('fetchIconBtn');
+    btn.disabled = true;
+    btn.classList.add('loading');
+    btn.textContent = '获取中...';
+
+    try {
+        const urlObj = new URL(url);
+        const domain = urlObj.hostname;
+        
+        // 尝试获取 favicon
+        const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+        
+        document.getElementById('siteIcon').value = faviconUrl;
+        document.getElementById('siteIcon').dataset.isImage = 'true';
+        
+        // 尝试提取网站主题色（这里使用一个通用的颜色服务）
+        await extractColorFromFavicon(faviconUrl);
+        
+        updateIconPreview();
+    } catch (error) {
+        console.error('获取 favicon 失败:', error);
+        alert('获取图标失败，请手动输入');
+    } finally {
+        btn.disabled = false;
+        btn.classList.remove('loading');
+        btn.textContent = '获取图标';
+    }
+}
+
+// 从 favicon 中提取主题色
+async function extractColorFromFavicon(faviconUrl) {
+    try {
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            
+            // 获取图像数据
+            const imageData = ctx.getImageData(0, 0, img.width, img.height);
+            const data = imageData.data;
+            
+            // 计算主要颜色（获取出现频率最高的非白色、非黑色的颜色）
+            const colorMap = {};
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                const a = data[i + 3];
+                
+                // 忽略透明和接近白色/黑色的颜色
+                if (a < 200 || (r > 230 && g > 230 && b > 230) || (r < 25 && g < 25 && b < 25)) {
+                    continue;
+                }
+                
+                const color = `rgb(${r},${g},${b})`;
+                colorMap[color] = (colorMap[color] || 0) + 1;
+            }
+            
+            // 获取出现次数最多的颜色
+            let dominantColor = '#3b82f6';
+            let maxCount = 0;
+            for (const color in colorMap) {
+                if (colorMap[color] > maxCount) {
+                    maxCount = colorMap[color];
+                    dominantColor = rgbToHex(color);
+                }
+            }
+            
+            document.getElementById('siteColor').value = dominantColor;
+            updateColorPreview();
+        };
+        
+        img.src = faviconUrl;
+    } catch (error) {
+        console.error('提取颜色失败:', error);
+    }
+}
+
+// RGB 转 16 进制颜色
+function rgbToHex(rgb) {
+    const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+    if (!match) return '#3b82f6';
+    
+    const hex = (x) => {
+        const hexValue = x.toString(16);
+        return hexValue.length === 1 ? '0' + hexValue : hexValue;
+    };
+    
+    return '#' + hex(parseInt(match[1])) + hex(parseInt(match[2])) + hex(parseInt(match[3]));
+}
+
+// 更新图标预览
+function updateIconPreview() {
+    const icon = document.getElementById('siteIcon').value;
+    const preview = document.getElementById('iconPreview');
+    const previewIcon = document.getElementById('previewIcon');
+    const previewText = document.getElementById('previewText');
+    
+    if (!icon) {
+        preview.style.display = 'none';
+        return;
+    }
+    
+    preview.style.display = 'flex';
+    
+    if (icon.startsWith('http')) {
+        previewIcon.innerHTML = `<img src="${icon}" alt="favicon">`;
+        previewText.textContent = '图标 URL: ' + icon.substring(0, 40) + '...';
+    } else {
+        previewIcon.innerHTML = `<i class="${icon}"></i>`;
+        previewText.textContent = 'FontAwesome: ' + icon;
+    }
+}
+
+// 更新颜色预览
+function updateColorPreview() {
+    const color = document.getElementById('siteColor').value;
+    const preview = document.getElementById('colorPreview');
+    if (color) {
+        preview.style.backgroundColor = color;
+    }
+}
+
+// 监听输入变化
+document.getElementById('siteIcon').addEventListener('input', updateIconPreview);
+document.getElementById('siteColor').addEventListener('input', updateColorPreview);
+
 // 处理回车搜索
 function handleSearch(event) {
     if (event.key === 'Enter') {
@@ -468,6 +676,9 @@ function openAddSiteModal(categoryIndex) {
     currentCategoryIndex = categoryIndex;
     document.getElementById('addSiteForm').reset();
     document.getElementById('siteColor').value = '#3b82f6';
+    document.getElementById('siteIcon').value = '';
+    document.getElementById('iconPreview').style.display = 'none';
+    updateColorPreview();
     document.getElementById('addSiteModal').classList.add('active');
 }
 
@@ -481,13 +692,14 @@ document.getElementById('addSiteForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
     const navData = getNavData();
+    const iconValue = document.getElementById('siteIcon').value;
     const newSite = {
         name: document.getElementById('siteName').value,
         url: document.getElementById('siteUrl').value,
         desc: document.getElementById('siteDesc').value,
-        icon: document.getElementById('siteIcon').value || 'fa-solid fa-link',
+        icon: iconValue || 'fa-solid fa-link',
         color: document.getElementById('siteColor').value,
-        isImage: document.getElementById('siteIcon').value.startsWith('http')
+        isImage: iconValue.startsWith('http')
     };
 
     navData[currentCategoryIndex].sites.push(newSite);
