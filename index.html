@@ -161,6 +161,7 @@
             align-items: center;
             gap: 14px;
             position: relative;
+            group: true;
         }
         .card:hover {
             transform: translateY(-3px);
@@ -186,27 +187,44 @@
             text-overflow: ellipsis; 
             max-width: 140px;
         }
-        .card-delete {
+        
+        /* Card 操作按钮容器 */
+        .card-actions {
             position: absolute;
             top: 8px;
             right: 8px;
-            background: rgba(255, 59, 48, 0.1);
-            color: #ff3b30;
+            display: flex;
+            gap: 6px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .card:hover .card-actions {
+            opacity: 1;
+        }
+        
+        .card-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
             border: none;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
             cursor: pointer;
-            display: none;
+            display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             transition: all 0.3s ease;
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent-color);
         }
-        .card:hover .card-delete {
-            display: flex;
+        .card-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            transform: scale(1.1);
         }
-        .card-delete:hover {
+        .card-delete-btn {
+            background: rgba(255, 59, 48, 0.1);
+            color: #ff3b30;
+        }
+        .card-delete-btn:hover {
             background: rgba(255, 59, 48, 0.2);
         }
 
@@ -249,6 +267,9 @@
             margin-bottom: 6px;
             font-size: 0.95rem;
             font-weight: 500;
+        }
+        .form-group label .required {
+            color: #ff3b30;
         }
         .form-group input, .form-group select {
             width: 100%;
@@ -401,27 +422,27 @@
         </footer>
     </div>
 
-    <!-- 添加网站的 Modal -->
+    <!-- 添加/编辑网站的 Modal -->
     <div id="addSiteModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">添加网站</div>
+            <div class="modal-header" id="modalTitle">添加网站</div>
             <form id="addSiteForm">
                 <div class="form-group">
-                    <label for="siteName">网站名称 *</label>
+                    <label for="siteName">网站名称 <span class="required">*</span></label>
                     <input type="text" id="siteName" placeholder="例如：哔哩哔哩" required>
                 </div>
                 <div class="form-group">
-                    <label for="siteUrl">网站链接 *</label>
+                    <label for="siteUrl">网站链接 <span class="required">*</span></label>
                     <div style="display: flex; gap: 8px;">
                         <input type="url" id="siteUrl" placeholder="例如：https://www.bilibili.com" required style="flex: 1;">
                         <button type="button" class="fetch-btn" id="fetchIconBtn" onclick="fetchFaviconAndColor()">
-                            <i class="fas fa-download"></i> 获取图标
+                            <i class="fas fa-download"></i> 获取
                         </button>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="siteDesc">网站描述 *</label>
-                    <input type="text" id="siteDesc" placeholder="例如：国内知名的视频弹幕网站" required>
+                    <label for="siteDesc">网站描述</label>
+                    <input type="text" id="siteDesc" placeholder="例如：国内知名的视频弹幕网站">
                 </div>
                 <div class="form-group">
                     <label>图标 (自动获取，可手动编辑)</label>
@@ -439,7 +460,7 @@
                     </div>
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">添加</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">添加</button>
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
                 </div>
             </form>
@@ -493,8 +514,9 @@ function saveNavData(data) {
     localStorage.setItem('navData', JSON.stringify(data));
 }
 
-// 全局变量存储当前编辑的类别索引
+// 全局变量存储当前编辑的类别和网站索引
 let currentCategoryIndex = 0;
+let currentSiteIndex = -1; // -1 表示添加新网站，否则是编辑模式
 
 // ============================================
 // ⬆️ 配置结束 ⬆️
@@ -533,7 +555,7 @@ async function fetchFaviconAndColor() {
     } finally {
         btn.disabled = false;
         btn.classList.remove('loading');
-        btn.textContent = '获取图标';
+        btn.textContent = '获取';
     }
 }
 
@@ -674,10 +696,34 @@ function filterSites() {
 // 打开添加网站的 Modal
 function openAddSiteModal(categoryIndex) {
     currentCategoryIndex = categoryIndex;
+    currentSiteIndex = -1;
+    document.getElementById('modalTitle').textContent = '添加网站';
+    document.getElementById('submitBtn').textContent = '添加';
     document.getElementById('addSiteForm').reset();
     document.getElementById('siteColor').value = '#3b82f6';
     document.getElementById('siteIcon').value = '';
     document.getElementById('iconPreview').style.display = 'none';
+    updateColorPreview();
+    document.getElementById('addSiteModal').classList.add('active');
+}
+
+// 打开编辑网站的 Modal
+function openEditSiteModal(categoryIndex, siteIndex) {
+    currentCategoryIndex = categoryIndex;
+    currentSiteIndex = siteIndex;
+    document.getElementById('modalTitle').textContent = '编辑网站';
+    document.getElementById('submitBtn').textContent = '保存';
+    
+    const navData = getNavData();
+    const site = navData[categoryIndex].sites[siteIndex];
+    
+    document.getElementById('siteName').value = site.name;
+    document.getElementById('siteUrl').value = site.url;
+    document.getElementById('siteDesc').value = site.desc || '';
+    document.getElementById('siteIcon').value = site.icon;
+    document.getElementById('siteColor').value = site.color;
+    
+    updateIconPreview();
     updateColorPreview();
     document.getElementById('addSiteModal').classList.add('active');
 }
@@ -687,7 +733,7 @@ function closeModal() {
     document.getElementById('addSiteModal').classList.remove('active');
 }
 
-// 处理添加网站的表单提交
+// 处理添加/编辑网站的表单提交
 document.getElementById('addSiteForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
@@ -702,7 +748,14 @@ document.getElementById('addSiteForm').addEventListener('submit', function(e) {
         isImage: iconValue.startsWith('http')
     };
 
-    navData[currentCategoryIndex].sites.push(newSite);
+    if (currentSiteIndex === -1) {
+        // 添加新网站
+        navData[currentCategoryIndex].sites.push(newSite);
+    } else {
+        // 编辑现有网站
+        navData[currentCategoryIndex].sites[currentSiteIndex] = newSite;
+    }
+    
     saveNavData(navData);
     renderNav(navData);
     closeModal();
@@ -729,15 +782,20 @@ function renderNav(data) {
         if (cat.sites.length === 0) return '';
         const cards = cat.sites.map((site, siteIndex) => `
             <a class="card" href="${site.url}" target="_blank" rel="noopener noreferrer">
-                <button class="card-delete" onclick="event.preventDefault(); event.stopPropagation(); deleteSite(${catIndex}, ${siteIndex});" title="删除">
-                    <i class="fas fa-times"></i>
-                </button>
+                <div class="card-actions">
+                    <button class="card-btn" onclick="event.preventDefault(); event.stopPropagation(); openEditSiteModal(${catIndex}, ${siteIndex});" title="编辑">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="card-btn card-delete-btn" onclick="event.preventDefault(); event.stopPropagation(); deleteSite(${catIndex}, ${siteIndex});" title="删除">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
                 <div class="card-icon" style="background:${site.color}15;color:${site.color}">
                     ${site.isImage ? `<img src="${site.icon}" alt="${site.name}">` : `<i class="${site.icon}"></i>`}
                 </div>
                 <div class="card-info">
                     <h3>${site.name}</h3>
-                    <p>${site.desc}</p>
+                    <p>${site.desc || '暂无描述'}</p>
                 </div>
             </a>
         `).join('');
