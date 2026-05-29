@@ -56,9 +56,46 @@
         }
 
         /* Header */
-        header { text-align: center; margin-bottom: 50px; }
-        header h1 { font-size: 2.2rem; margin-bottom: 10px; letter-spacing: -0.5px; }
-        header p { color: var(--text-secondary); font-size: 1.1rem; }
+        header { 
+            text-align: center; 
+            margin-bottom: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+        header h1 { 
+            font-size: 2.2rem; 
+            margin-bottom: 10px; 
+            letter-spacing: -0.5px; 
+            margin: 0;
+        }
+        header p { 
+            color: var(--text-secondary); 
+            font-size: 1.1rem; 
+            margin: 0;
+        }
+
+        /* 添加分类按钮 */
+        .add-category-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.5rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+        }
+        .add-category-btn:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent-color);
+        }
 
         /* Search Bar */
         .search-box {
@@ -109,7 +146,10 @@
         }
 
         /* Category */
-        .category { margin-bottom: 40px; }
+        .category { 
+            margin-bottom: 40px; 
+            position: relative;
+        }
         .category-header {
             display: flex;
             justify-content: space-between;
@@ -122,23 +162,36 @@
             border-left: 4px solid var(--accent-color);
             display: flex;
             align-items: center;
+            flex: 1;
         }
+        
+        /* 隐藏的添加按钮（右键菜单风格） */
+        .category-actions {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            display: flex;
+            gap: 8px;
+        }
+        .category:hover .category-actions {
+            opacity: 1;
+        }
+        
         .add-site-btn {
-            background: var(--accent-color);
-            color: white;
+            background: transparent;
+            color: var(--text-secondary);
             border: none;
-            padding: 8px 16px;
+            padding: 4px 8px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 0.9rem;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             transition: all 0.3s ease;
         }
         .add-site-btn:hover {
-            opacity: 0.9;
-            transform: scale(1.05);
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent-color);
         }
 
         /* Grid */
@@ -381,21 +434,16 @@
         /* Responsive */
         @media (max-width: 640px) {
             .container { padding: 30px 16px; }
+            header { 
+                flex-direction: column;
+                gap: 8px;
+            }
             header h1 { font-size: 1.6rem; }
             .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
             .card { padding: 16px; gap: 10px; }
             .card-icon { width: 34px; height: 34px; font-size: 1.2rem; }
             .card-info p { max-width: 100px; }
             .search-box input { padding-left: 100px; }
-            .category-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 12px;
-            }
-            .add-site-btn {
-                width: 100%;
-                justify-content: center;
-            }
         }
     </style>
 </head>
@@ -403,8 +451,12 @@
     <div class="container">
         <header>
             <h1>🚀 My Nav</h1>
-            <p>高效娱乐，从好的导航开始</p>
+            <button class="add-category-btn" onclick="openAddCategoryModal()" title="添加分类">
+                <i class="fas fa-folder-plus"></i>
+            </button>
         </header>
+
+        <p style="text-align: center; color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 30px;">高效娱乐，从好的导航开始</p>
 
         <div class="search-box">
             <select id="searchEngine" class="search-engine-select">
@@ -462,6 +514,23 @@
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary" id="submitBtn">添加</button>
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 添加/编辑分类的 Modal -->
+    <div id="addCategoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="categoryModalTitle">添加分类</div>
+            <form id="addCategoryForm">
+                <div class="form-group">
+                    <label for="categoryName">分类名称 <span class="required">*</span></label>
+                    <input type="text" id="categoryName" placeholder="例如：🇨🇳 国内常用" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" id="submitCategoryBtn">添加</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeCategoryModal()">取消</button>
                 </div>
             </form>
         </div>
@@ -733,6 +802,19 @@ function closeModal() {
     document.getElementById('addSiteModal').classList.remove('active');
 }
 
+// 打开添加分类的 Modal
+function openAddCategoryModal() {
+    document.getElementById('categoryModalTitle').textContent = '添加分类';
+    document.getElementById('submitCategoryBtn').textContent = '添加';
+    document.getElementById('addCategoryForm').reset();
+    document.getElementById('addCategoryModal').classList.add('active');
+}
+
+// 关闭分类 Modal
+function closeCategoryModal() {
+    document.getElementById('addCategoryModal').classList.remove('active');
+}
+
 // 处理添加/编辑网站的表单提交
 document.getElementById('addSiteForm').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -761,11 +843,38 @@ document.getElementById('addSiteForm').addEventListener('submit', function(e) {
     closeModal();
 });
 
+// 处理添加分类的表单提交
+document.getElementById('addCategoryForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const navData = getNavData();
+    const categoryName = document.getElementById('categoryName').value;
+    
+    navData.push({
+        category: categoryName,
+        sites: []
+    });
+    
+    saveNavData(navData);
+    renderNav(navData);
+    closeCategoryModal();
+});
+
 // 删除网站
 function deleteSite(categoryIndex, siteIndex) {
     if (confirm('确定要删除这个网站吗？')) {
         const navData = getNavData();
         navData[categoryIndex].sites.splice(siteIndex, 1);
+        saveNavData(navData);
+        renderNav(navData);
+    }
+}
+
+// 删除分类
+function deleteCategory(categoryIndex) {
+    if (confirm('确定要删除这个分类吗？该分类下的所有网站也会被删除！')) {
+        const navData = getNavData();
+        navData.splice(categoryIndex, 1);
         saveNavData(navData);
         renderNav(navData);
     }
@@ -803,9 +912,14 @@ function renderNav(data) {
             <div class="category">
                 <div class="category-header">
                     <div class="category-title">${cat.category}</div>
-                    <button class="add-site-btn" onclick="openAddSiteModal(${catIndex})">
-                        <i class="fas fa-plus"></i> 添加网站
-                    </button>
+                    <div class="category-actions">
+                        <button class="add-site-btn" onclick="openAddSiteModal(${catIndex})" title="添加网站到此分类">
+                            <i class="fas fa-link"></i>
+                        </button>
+                        <button class="add-site-btn" onclick="deleteCategory(${catIndex})" style="color: #ff3b30;" title="删除分类">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="grid">${cards}</div>
             </div>`;
@@ -816,6 +930,12 @@ function renderNav(data) {
 document.getElementById('addSiteModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeModal();
+    }
+});
+
+document.getElementById('addCategoryModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeCategoryModal();
     }
 });
 
