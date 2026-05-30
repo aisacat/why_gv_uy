@@ -199,6 +199,7 @@
             justify-content: center;
             font-size: 1.5rem;
             flex-shrink: 0;
+            position: relative;
         }
         .card-icon img { width: 24px; height: 24px; object-fit: contain; }
         .card-info h3 { font-size: 0.95rem; margin-bottom: 2px; }
@@ -209,6 +210,37 @@
             overflow: hidden; 
             text-overflow: ellipsis; 
             max-width: 140px;
+        }
+
+        /* 删除菜单 */
+        .delete-menu {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--text-secondary);
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 500;
+            min-width: 120px;
+            overflow: hidden;
+        }
+        .delete-menu button {
+            width: 100%;
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            color: #ff3b30;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+        .delete-menu button:hover {
+            background: rgba(255, 59, 48, 0.1);
         }
 
         /* Modal */
@@ -706,6 +738,39 @@ function closeModal() {
     document.getElementById('addSiteModal').classList.remove('active');
 }
 
+// 删除网站
+function deleteSite(categoryIndex, siteIndex) {
+    if (confirm('确定要删除此网站吗？')) {
+        const navData = getNavData();
+        navData[categoryIndex].sites.splice(siteIndex, 1);
+        saveNavData(navData);
+        renderNav(navData);
+    }
+}
+
+// 隐藏所有删除菜单
+function hideAllDeleteMenus() {
+    document.querySelectorAll('.delete-menu').forEach(menu => menu.remove());
+}
+
+// 处理右键点击显示删除菜单
+function handleCardRightClick(event, categoryIndex, siteIndex) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    hideAllDeleteMenus();
+    
+    const menu = document.createElement('div');
+    menu.className = 'delete-menu';
+    menu.innerHTML = `
+        <button onclick="event.stopPropagation();deleteSite(${categoryIndex}, ${siteIndex}); hideAllDeleteMenus();">
+            <i class="fas fa-trash"></i> 删除
+        </button>
+    `;
+    
+    event.target.closest('.card-icon').appendChild(menu);
+}
+
 // 处理添加/编辑网站的表单提交
 document.getElementById('addSiteForm').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -750,18 +815,12 @@ function renderNav(data) {
         const cards = cat.sites.map((site, siteIndex) => {
             return `
                 <div class="card" onclick="openSiteUrl('${site.url}')">
-                    <div class="card-icon" style="background:${site.color}15;color:${site.color}">
+                    <div class="card-icon" style="background:${site.color}15;color:${site.color}" oncontextmenu="handleCardRightClick(event, ${catIndex}, ${siteIndex})">
                         ${site.isImage ? `<img src="${site.icon}" alt="${site.name}">` : `<i class="${site.icon}"></i>`}
                     </div>
                     <div class="card-info">
                         <h3>${site.name}</h3>
                         <p>${site.desc || '暂无描述'}</p>
-                    </div>
-                    <!-- 编辑按钮（悬浮显示） -->
-                    <div style="position:absolute;right:10px;top:10px;opacity:0;transition:opacity 0.2s;">
-                        <button class="add-site-btn" onclick="event.stopPropagation();openEditSiteModal(${catIndex}, ${siteIndex})" title="编辑网站">
-                            <i class="fas fa-edit"></i>
-                        </button>
                     </div>
                 </div>
             `;
@@ -787,6 +846,11 @@ document.getElementById('addSiteModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeModal();
     }
+});
+
+// 点击任何地方隐藏删除菜单
+document.addEventListener('click', function() {
+    hideAllDeleteMenus();
 });
 
 // 初始化
