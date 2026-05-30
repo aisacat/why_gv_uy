@@ -59,10 +59,6 @@
         header { 
             text-align: center; 
             margin-bottom: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
         }
         header h1 { 
             font-size: 2.2rem; 
@@ -74,27 +70,6 @@
             color: var(--text-secondary); 
             font-size: 1.1rem; 
             margin: 0;
-        }
-
-        /* 添加分类按钮 */
-        .add-category-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-size: 1.5rem;
-            padding: 4px 8px;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-        }
-        .add-category-btn:hover {
-            background: rgba(59, 130, 246, 0.1);
-            color: var(--accent-color);
         }
 
         /* Search Bar */
@@ -165,15 +140,10 @@
             flex: 1;
         }
         
-        /* 隐藏的添加按钮（右键菜单风格） */
+        /* 分类操作按钮 */
         .category-actions {
-            opacity: 0;
-            transition: opacity 0.3s ease;
             display: flex;
             gap: 8px;
-        }
-        .category:hover .category-actions {
-            opacity: 1;
         }
         
         .add-site-btn {
@@ -214,7 +184,7 @@
             align-items: center;
             gap: 14px;
             position: relative;
-            group: true;
+            cursor: pointer;
         }
         .card:hover {
             transform: translateY(-3px);
@@ -239,46 +209,6 @@
             overflow: hidden; 
             text-overflow: ellipsis; 
             max-width: 140px;
-        }
-        
-        /* Card 操作按钮容器 */
-        .card-actions {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            display: flex;
-            gap: 6px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        .card:hover .card-actions {
-            opacity: 1;
-        }
-        
-        .card-btn {
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-            background: rgba(59, 130, 246, 0.1);
-            color: var(--accent-color);
-        }
-        .card-btn:hover {
-            background: rgba(59, 130, 246, 0.2);
-            transform: scale(1.1);
-        }
-        .card-delete-btn {
-            background: rgba(255, 59, 48, 0.1);
-            color: #ff3b30;
-        }
-        .card-delete-btn:hover {
-            background: rgba(255, 59, 48, 0.2);
         }
 
         /* Modal */
@@ -434,10 +364,6 @@
         /* Responsive */
         @media (max-width: 640px) {
             .container { padding: 30px 16px; }
-            header { 
-                flex-direction: column;
-                gap: 8px;
-            }
             header h1 { font-size: 1.6rem; }
             .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
             .card { padding: 16px; gap: 10px; }
@@ -451,9 +377,6 @@
     <div class="container">
         <header>
             <h1>🚀 My Nav</h1>
-            <button class="add-category-btn" onclick="openAddCategoryModal()" title="添加分类">
-                <i class="fas fa-folder-plus"></i>
-            </button>
         </header>
 
         <p style="text-align: center; color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 30px;">高效娱乐，从好的导航开始</p>
@@ -519,17 +442,17 @@
         </div>
     </div>
 
-    <!-- 添加/编辑分类的 Modal -->
+    <!-- 添加分类的 Modal -->
     <div id="addCategoryModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header" id="categoryModalTitle">添加分类</div>
+            <div class="modal-header">添加分类</div>
             <form id="addCategoryForm">
                 <div class="form-group">
                     <label for="categoryName">分类名称 <span class="required">*</span></label>
                     <input type="text" id="categoryName" placeholder="例如：🇨🇳 国内常用" required>
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary" id="submitCategoryBtn">添加</button>
+                    <button type="submit" class="btn btn-primary">添加</button>
                     <button type="button" class="btn btn-secondary" onclick="closeCategoryModal()">取消</button>
                 </div>
             </form>
@@ -583,9 +506,9 @@ function saveNavData(data) {
     localStorage.setItem('navData', JSON.stringify(data));
 }
 
-// 全局变量存储当前编辑的类别和网站索引
+// 全局变量
 let currentCategoryIndex = 0;
-let currentSiteIndex = -1; // -1 表示添加新网站，否则是编辑模式
+let currentSiteIndex = -1;
 
 // ============================================
 // ⬆️ 配置结束 ⬆️
@@ -614,7 +537,7 @@ async function fetchFaviconAndColor() {
         document.getElementById('siteIcon').value = faviconUrl;
         document.getElementById('siteIcon').dataset.isImage = 'true';
         
-        // 尝试提取网站主题色（这里使用一个通用的颜色服务）
+        // 尝试提取网站主题色
         await extractColorFromFavicon(faviconUrl);
         
         updateIconPreview();
@@ -646,7 +569,7 @@ async function extractColorFromFavicon(faviconUrl) {
             const imageData = ctx.getImageData(0, 0, img.width, img.height);
             const data = imageData.data;
             
-            // 计算主要颜色（获取出现频率最高的非白色、非黑色的颜色）
+            // 计算主要颜色
             const colorMap = {};
             for (let i = 0; i < data.length; i += 4) {
                 const r = data[i];
@@ -654,7 +577,6 @@ async function extractColorFromFavicon(faviconUrl) {
                 const b = data[i + 2];
                 const a = data[i + 3];
                 
-                // 忽略透明和接近白色/黑色的颜色
                 if (a < 200 || (r > 230 && g > 230 && b > 230) || (r < 25 && g < 25 && b < 25)) {
                     continue;
                 }
@@ -663,7 +585,6 @@ async function extractColorFromFavicon(faviconUrl) {
                 colorMap[color] = (colorMap[color] || 0) + 1;
             }
             
-            // 获取出现次数最多的颜色
             let dominantColor = '#3b82f6';
             let maxCount = 0;
             for (const color in colorMap) {
@@ -804,8 +725,6 @@ function closeModal() {
 
 // 打开添加分类的 Modal
 function openAddCategoryModal() {
-    document.getElementById('categoryModalTitle').textContent = '添加分类';
-    document.getElementById('submitCategoryBtn').textContent = '添加';
     document.getElementById('addCategoryForm').reset();
     document.getElementById('addCategoryModal').classList.add('active');
 }
@@ -831,10 +750,8 @@ document.getElementById('addSiteForm').addEventListener('submit', function(e) {
     };
 
     if (currentSiteIndex === -1) {
-        // 添加新网站
         navData[currentCategoryIndex].sites.push(newSite);
     } else {
-        // 编辑现有网站
         navData[currentCategoryIndex].sites[currentSiteIndex] = newSite;
     }
     
@@ -860,24 +777,9 @@ document.getElementById('addCategoryForm').addEventListener('submit', function(e
     closeCategoryModal();
 });
 
-// 删除网站
-function deleteSite(categoryIndex, siteIndex) {
-    if (confirm('确定要删除这个网站吗？')) {
-        const navData = getNavData();
-        navData[categoryIndex].sites.splice(siteIndex, 1);
-        saveNavData(navData);
-        renderNav(navData);
-    }
-}
-
-// 删除分类
-function deleteCategory(categoryIndex) {
-    if (confirm('确定要删除这个分类吗？该分类下的所有网站也会被删除！')) {
-        const navData = getNavData();
-        navData.splice(categoryIndex, 1);
-        saveNavData(navData);
-        renderNav(navData);
-    }
+// 打开网站链接
+function openSiteUrl(url) {
+    window.open(url, '_blank');
 }
 
 // 渲染导航
@@ -887,37 +789,39 @@ function renderNav(data) {
         container.innerHTML = '<p style="text-align:center;color:#999;padding:40px;">没有找到匹配的站点 😢</p>';
         return;
     }
+    
     container.innerHTML = data.map((cat, catIndex) => {
         if (cat.sites.length === 0) return '';
-        const cards = cat.sites.map((site, siteIndex) => `
-            <a class="card" href="${site.url}" target="_blank" rel="noopener noreferrer">
-                <div class="card-actions">
-                    <button class="card-btn" onclick="event.preventDefault(); event.stopPropagation(); openEditSiteModal(${catIndex}, ${siteIndex});" title="编辑">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="card-btn card-delete-btn" onclick="event.preventDefault(); event.stopPropagation(); deleteSite(${catIndex}, ${siteIndex});" title="删除">
-                        <i class="fas fa-trash"></i>
-                    </button>
+        const cards = cat.sites.map((site, siteIndex) => {
+            return `
+                <div class="card" onclick="openSiteUrl('${site.url}')">
+                    <div class="card-icon" style="background:${site.color}15;color:${site.color}">
+                        ${site.isImage ? `<img src="${site.icon}" alt="${site.name}">` : `<i class="${site.icon}"></i>`}
+                    </div>
+                    <div class="card-info">
+                        <h3>${site.name}</h3>
+                        <p>${site.desc || '暂无描述'}</p>
+                    </div>
+                    <!-- 编辑按钮（悬浮显示） -->
+                    <div style="position:absolute;right:10px;top:10px;opacity:0;transition:opacity 0.2s;">
+                        <button class="add-site-btn" onclick="event.stopPropagation();openEditSiteModal(${catIndex}, ${siteIndex})" title="编辑网站">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="card-icon" style="background:${site.color}15;color:${site.color}">
-                    ${site.isImage ? `<img src="${site.icon}" alt="${site.name}">` : `<i class="${site.icon}"></i>`}
-                </div>
-                <div class="card-info">
-                    <h3>${site.name}</h3>
-                    <p>${site.desc || '暂无描述'}</p>
-                </div>
-            </a>
-        `).join('');
+            `;
+        }).join('');
+        
         return `
             <div class="category">
                 <div class="category-header">
                     <div class="category-title">${cat.category}</div>
                     <div class="category-actions">
                         <button class="add-site-btn" onclick="openAddSiteModal(${catIndex})" title="添加网站到此分类">
-                            <i class="fas fa-link"></i>
+                            <i class="fas fa-plus"></i> 添加网站
                         </button>
-                        <button class="add-site-btn" onclick="deleteCategory(${catIndex})" style="color: #ff3b30;" title="删除分类">
-                            <i class="fas fa-trash-alt"></i>
+                        <button class="add-site-btn" onclick="openAddCategoryModal()" title="添加新分类">
+                            <i class="fas fa-folder-plus"></i> 添加分类
                         </button>
                     </div>
                 </div>
