@@ -442,23 +442,6 @@
         </div>
     </div>
 
-    <!-- 添加分类的 Modal -->
-    <div id="addCategoryModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">添加分类</div>
-            <form id="addCategoryForm">
-                <div class="form-group">
-                    <label for="categoryName">分类名称 <span class="required">*</span></label>
-                    <input type="text" id="categoryName" placeholder="例如：🇨🇳 国内常用" required>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">添加</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeCategoryModal()">取消</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
 <script>
 // ============================================
 // ⬇️ 导航数据与搜索引擎配置 ⬇️
@@ -723,17 +706,6 @@ function closeModal() {
     document.getElementById('addSiteModal').classList.remove('active');
 }
 
-// 打开添加分类的 Modal
-function openAddCategoryModal() {
-    document.getElementById('addCategoryForm').reset();
-    document.getElementById('addCategoryModal').classList.add('active');
-}
-
-// 关闭分类 Modal
-function closeCategoryModal() {
-    document.getElementById('addCategoryModal').classList.remove('active');
-}
-
 // 处理添加/编辑网站的表单提交
 document.getElementById('addSiteForm').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -758,23 +730,6 @@ document.getElementById('addSiteForm').addEventListener('submit', function(e) {
     saveNavData(navData);
     renderNav(navData);
     closeModal();
-});
-
-// 处理添加分类的表单提交
-document.getElementById('addCategoryForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const navData = getNavData();
-    const categoryName = document.getElementById('categoryName').value;
-    
-    navData.push({
-        category: categoryName,
-        sites: []
-    });
-    
-    saveNavData(navData);
-    renderNav(navData);
-    closeCategoryModal();
 });
 
 // 打开网站链接
@@ -820,9 +775,6 @@ function renderNav(data) {
                         <button class="add-site-btn" onclick="openAddSiteModal(${catIndex})" title="添加网站到此分类">
                             <i class="fas fa-plus"></i> 添加网站
                         </button>
-                        <button class="add-site-btn" onclick="openAddCategoryModal()" title="添加新分类">
-                            <i class="fas fa-folder-plus"></i> 添加分类
-                        </button>
                     </div>
                 </div>
                 <div class="grid">${cards}</div>
@@ -834,12 +786,6 @@ function renderNav(data) {
 document.getElementById('addSiteModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeModal();
-    }
-});
-
-document.getElementById('addCategoryModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeCategoryModal();
     }
 });
 
